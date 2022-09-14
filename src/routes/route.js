@@ -4,8 +4,8 @@ const CollegeController=require("../Controllers/collegeController")
 const internController=require("../Controllers/internController")
 
 
-router.post("/functionup/colleges",CollegeController.creatCollege)
-router.post("/functionup/interns",internController.creatInterns)
+router.post("/functionup/colleges",CollegeController.createCollege)
+router.post("/functionup/interns",internController.createIntern)
 
 
 module.exports=router;
