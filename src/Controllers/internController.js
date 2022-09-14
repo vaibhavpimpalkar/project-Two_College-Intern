@@ -11,32 +11,30 @@ const createIntern = async function (req, res) {
     try {
 
         let data = req.body
-    
-const {name , email , mobile , collegeId } = data
 
-if(Object.keys(data)==0){
-    return res.status(400).send({status : false , msg : "Please Enter Details"})
-}
+        const { name, email, mobile, collegeId } = data
 
-if(!(name)){
-    return res.status(400).send({status : false , msg : "please enter Name"})
-}
+        if (Object.keys(data) == 0) {
+            return res.status(400).send({ status: false, msg: "Please Enter Details" })
+        }
 
-if(!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))){
-    return res.status(400).send({status :false , msg : "please enter valid E-mail" })
-}
+        if (!(name)) {
+            return res.status(400).send({ status: false, msg: "please enter Name" })
+        }
 
-if(!(/^(\+\d{1,3}[- ]?)?\d{10}$/).test(mobile)){
-    res.status(400).send({status : false , msg : "Please provide valid Number.."})
-}
+        if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
+            return res.status(400).send({ status: false, msg: "please enter valid E-mail" })
+        }
 
-// if(!(mongoose.Schema.Types.isValid(ObjectId)(collegeId))){
-let clgid = await collegeModel.findById({_id : collegeId})
-if(!clgid)
+        if (!(/^(\+\d{1,3}[- ]?)?\d{10}$/).test(mobile)) {
+            res.status(400).send({ status: false, msg: "Please provide valid Number.." })
+        }
 
-{
-    res.status(400).send({status : false , msg : "Please provide valid CollegeId"})
-}
+        // if(!(mongoose.Schema.Types.isValid(ObjectId)(collegeId))){
+        let clgid = await collegeModel.findById({ _id: collegeId })
+        if (!clgid) {
+            res.status(400).send({ status: false, msg: "Please provide valid CollegeId" })
+        }
 
         let intern = await internModel.create(data)
         return res.status(200).send({ status: false, msg: intern })
@@ -47,4 +45,26 @@ if(!clgid)
     }
 }
 
-module.exports = {createIntern}
+
+
+const getCollegeDetails = async function (req, res) {
+
+    try {
+        let data = req.query.collegeName
+
+        if (!data) {
+            return res.status(400).send({ status: false, msg: "college Name is not found......" })
+        }
+
+        let college = await internModel.findOne({ name: collegeName })
+        res.status(200).send({ status: true, msg: college })
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, error: err.message })
+    }
+}
+
+
+
+
+module.exports = { createIntern, getCollegeDetails}
