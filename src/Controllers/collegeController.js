@@ -1,49 +1,53 @@
 
-const collegeModel=require("../models/collegeModel")
-const internModel=require("../models/collegeModel")
+const collegeModel = require("../models/collegeModel")
 
+const createCollege = async function (req, res) {
+  try {
+    let data = req.body
 
+    const { name, fullName, logoLink } = data
 
-const createCollege= async function (req,res){
-    try{
-      let data = req.body
+    if (Object.keys(data) == 0) {
+      return res.status(400).send({ status: false, msg: "Please Enter Details" })
+    }
 
-      const {name , fullName , logoLink} = data
+    if (!name) {
+      return res.status(400).send({ status: false, msg: "Please provide valid name" })
+    }
 
-      if(!name){
-        return res.status(400).send({status : false , msg : "Please provide valid name"})
-      }
-    //   if (!(/^[a-zA-Z][a-zA-Z\s]{2,6}[a-zA-Z]$/).test(name)) {
-    //     return res.status(400).send({ status: false, msg: "please provide valid name regex" })
-    // }
+    if (!(/^[a-z]+$/).test(name)) {
+
+      return res.status(400).send({ status: false, msg: "please provide name in valid format only accept lowercase without any space" })
+    }
+
     let nameVerify = await internModel.findOne({ name: name })
 
-        if (nameVerify) {
-            return res.status(400).send({ status: false, msg: "this name already exists please provide another name" })
-        }
-
-      if(!fullName){
-        return res.status(400).send({status : false , msg : "Please provide valid Full Name"})
-      }
-      if (!(/^([A-Za-z]+[,]?[ ]?|[A-Za-z]+['-]?)+$/).test(fullName)) {
-        return res.status(400).send({ status: false, msg: "please provide valid fullName regex" })
+    if (nameVerify) {
+      return res.status(400).send({ status: false, msg: "this name already exists please provide another name" })
     }
 
-      if(!logoLink){
-        return res.status(400).send({status : false , msg : "Please provide logoLink"})
-      }
-      if (!(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/).test(logoLink)) {
-        return res.status(400).send({ status: false, msg: "please provide valid logoLink regex" })
+    if (!fullName) {
+      return res.status(400).send({ status: false, msg: "Please provide valid Full Name" })
     }
-     
-      let collegeData = await collegeModel.create(data)
-       
-    res.status(201).send({ status  :  true , msg : collegeData})
+    if (!(/^([A-Za-z]+[,]?[ ]?|[A-Za-z]+['-]?)+$/).test(fullName)) {
+      return res.status(400).send({ status: false, msg: "please provide valid fullName " })
+    }
 
+    if (!logoLink) {
+      return res.status(400).send({ status: false, msg: "Please provide logoLink" })
     }
- catch (error) {
+    if (!(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/).test(logoLink)) {
+      return res.status(400).send({ status: false, msg: "please provide valid logoLink " })
+    }
+
+    let collegeData = await collegeModel.create(data)
+
+    res.status(201).send({ status: true, msg: collegeData })
+
+  }
+  catch (error) {
     res.status(500).send({ status: false, message: error.message })
-}
+  }
 }
 
-module.exports.createCollege=createCollege
+module.exports = { createCollege }

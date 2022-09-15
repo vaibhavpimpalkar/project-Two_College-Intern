@@ -1,10 +1,6 @@
-const mongoose = require('mongoose')
 
 const internModel = require("../models/internModel")
 const collegeModel = require('../models/collegeModel')
-
-// const isValidObjectId = function (ObjectId) { return mongoose.Types.ObjectId.isValid(ObjectId) }
-
 
 
 const createIntern = async function (req, res) {
@@ -26,8 +22,8 @@ const createIntern = async function (req, res) {
         if (!(/^[a-zA-z]+([\s][a-zA-Z]+)+$/).test(name)) { return res.status(400).send({ status: false, msg: "Please enter valid name" }) }
 
 
-
         //------------------------------------email validation----------------------------------------------//
+
         if (!email) {
             return res.status(400).send({ status: false, msg: "Email should be mandatory" })
         }
@@ -43,22 +39,37 @@ const createIntern = async function (req, res) {
         }
 
         //.............regex for mobile............
+
         const regMobile = /^(\+\d{1,3}[- ]?)?\d{10}$/;
+
         if (!regMobile.test(mobile)) {
+
             return res.status(400).send({ message: "Please enter valid Mobile Number" })
         }
+
         let mobData = await internModel.findOne({ mobile: mobile })
 
         //.............when mobile number is already in use............
+
         if (mobData) return res.status(400).send({ status: false, msg: 'Duplicate mobile' })
 
-        let collegeNameVerify = await collegeModel.findOne({ name: collegeName })
+        let collegeNameVerify = await collegeModel.findOne({ name: collegeName, isDeleted: false })
+
         if (!collegeNameVerify) {
+
             return res.status(400).send({ status: false, msg: "collegeName is not valid" })
         }
 
-        let intern = await internModel.create(data)
-        return res.status(200).send({ status: false, msg: intern })
+        let obj = { ...data, collegeId: collegeNameVerify._id }
+
+
+
+        let internC = await internModel.create(obj)
+
+
+        let intern = { isDeleted: internC.isDeleted, name: internC.name, email: internC.email, mobile: internC.mobile, collegeId: internC.collegeId }
+
+        return res.status(201).send({ status: true, data: intern })
 
     }
     catch (err) {
@@ -66,14 +77,16 @@ const createIntern = async function (req, res) {
     }
 }
 
-// ______________________GET ______________________
+// ______________________GETCOLLEGEDETAI ______________________
 
 let getCollegeDetails = async function (req, res) {
     try {
         let collegeName = req.query.collegeName
+
         console.log(collegeName)
 
         let getCollegeName = await collegeModel.findOne({ name: collegeName, isDeleted: false })
+
         if (!getCollegeName) { res.status(404).send({ status: false, msg: "CollegeName does not exist" }) }
 
         let data = { name: getCollegeName.name, fullName: getCollegeName.fullName, logoLink: getCollegeName.logoLink }
@@ -92,10 +105,6 @@ let getCollegeDetails = async function (req, res) {
     }
 
 }
-
-
-
-
 
 
 
