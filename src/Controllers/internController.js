@@ -9,7 +9,7 @@ const createIntern = async function (req, res) {
 
         let data = req.body
 
-        const { name, email, mobile, collegeName } = data
+        let { name, email, mobile, collegeName } = data
 
         if (Object.keys(data) == 0) {
             return res.status(400).send({ status: false, msg: "Please Enter Details" })
@@ -40,7 +40,7 @@ const createIntern = async function (req, res) {
 
         //.............regex for mobile............
 
-        const regMobile = /^(\+\d{1,3}[- ]?)?\d{10}$/;
+        let regMobile = /^(\+\d{1,3}[- ]?)?\d{10}$/;
 
         if (!regMobile.test(mobile)) {
 
@@ -53,23 +53,25 @@ const createIntern = async function (req, res) {
 
         if (mobData) return res.status(400).send({ status: false, msg: 'Duplicate mobile' })
 
-        let collegeNameVerify = await collegeModel.findOne({ name: collegeName, isDeleted: false })
-
-        if (!collegeNameVerify) {
-
-            return res.status(400).send({ status: false, msg: "collegeName is not valid" })
+        const collegeData = await collegeModel.findOne({ name: collegeName, isDeleted: false })
+        if (!collegeData) {
+            return res.status(400).send({ status: false, msg: "Invalid College Name" })
         }
+        const collegeId = collegeData._id
+        
+        const dataOfIntern = { name, email, mobile, collegeId } 
 
-        let obj = { ...data, collegeId: collegeNameVerify._id }
-
-
-
-        let internC = await internModel.create(obj)
-
-
-        let intern = { isDeleted: internC.isDeleted, name: internC.name, email: internC.email, mobile: internC.mobile, collegeId: internC.collegeId }
-
-        return res.status(201).send({ status: true, data: intern })
+        let savedData = await internModel.create(dataOfIntern)
+        return res.status(201).send({
+            status: true,
+            data: {
+                isDeleted: savedData.isDeleted == false,
+                name: savedData.name,
+                email: savedData.email,
+                mobile: savedData.mobile,
+                collegeId: savedData.collegeId
+            }
+        })
 
     }
     catch (err) {

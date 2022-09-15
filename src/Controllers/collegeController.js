@@ -20,7 +20,7 @@ const createCollege = async function (req, res) {
       return res.status(400).send({ status: false, msg: "please provide name in valid format only accept lowercase without any space" })
     }
 
-    let nameVerify = await internModel.findOne({ name: name })
+    let nameVerify = await collegeModel.findOne({ name: name })
 
     if (nameVerify) {
       return res.status(400).send({ status: false, msg: "this name already exists please provide another name" })
@@ -40,9 +40,11 @@ const createCollege = async function (req, res) {
       return res.status(400).send({ status: false, msg: "please provide valid logoLink " })
     }
 
-    let collegeData = await collegeModel.create(data)
+    let college = await collegeModel.create(data)
 
-    res.status(201).send({ status: true, msg: collegeData })
+        let createCollege={name:college.name, fullName:college.fullName, logoLink:college.logoLink, isDeleted:college.isDeleted}
+
+        return res.status(201).send({ status: true, msg: createCollege })
 
   }
   catch (error) {
