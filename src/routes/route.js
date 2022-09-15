@@ -10,6 +10,6 @@ router.post("/functionup/interns",internController.createIntern)
 
 // _____________________________GET APIS_________________________________________//
 
-router.get('/functionup/collegeDetails',internController.getCollegeDetails)
+router.get("/functionup/collegeDetails",internController.getCollegeDetails)
 
 module.exports=router;

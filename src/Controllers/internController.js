@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const internModel = require("../models/internModel")
 const collegeModel = require('../models/collegeModel')
 
-const isValidObjectId = function (ObjectId) { return mongoose.Types.ObjectId.isValid(ObjectId) }
+// const isValidObjectId = function (ObjectId) { return mongoose.Types.ObjectId.isValid(ObjectId) }
 
 
 
@@ -13,9 +13,7 @@ const createIntern = async function (req, res) {
 
         let data = req.body
 
-        const { name, email, mobile, collegeId } = data
-        let id = await collegeModel.findById(collegeId)
-
+        const { name, email, mobile, collegeName } = data
 
         if (Object.keys(data) == 0) {
             return res.status(400).send({ status: false, msg: "Please Enter Details" })
@@ -27,7 +25,7 @@ const createIntern = async function (req, res) {
 
         if (!(/^[a-zA-z]+([\s][a-zA-Z]+)+$/).test(name)) { return res.status(400).send({ status: false, msg: "Please enter valid name" }) }
 
-        
+
 
         //------------------------------------email validation----------------------------------------------//
         if (!email) {
@@ -44,27 +42,20 @@ const createIntern = async function (req, res) {
             return res.status(400).send({ status: false, msg: "this email already exists please provide another email" })
         }
 
-        //------------------------------------mobile validation----------------------------------------------//
-
-        if (!(/^(\+\d{1,3}[- ]?)?\d{10}$/).test(mobile)) {
-            res.status(400).send({ status: false, msg: "Please provide valid Mobile Number.." })
+        //.............regex for mobile............
+        const regMobile = /^(\+\d{1,3}[- ]?)?\d{10}$/;
+        if (!regMobile.test(mobile)) {
+            return res.status(400).send({ message: "Please enter valid Mobile Number" })
         }
-        let mobileVerify = await internModel.findOne({ mobile: mobile })
+        let mobData = await internModel.findOne({ mobile: mobile })
 
-        if (mobileVerify) {
-            return res.status(400).send({ status: false, msg: "this mobile already exists please provide another mobile" })
+        //.............when mobile number is already in use............
+        if (mobData) return res.status(400).send({ status: false, msg: 'Duplicate mobile' })
+
+        let collegeNameVerify = await collegeModel.findOne({ name: collegeName })
+        if (!collegeNameVerify) {
+            return res.status(400).send({ status: false, msg: "collegeName is not valid" })
         }
-        let collegeIdVerify = await collegeModel.findOne({ _id: collegeId })
-        if (!collegeIdVerify) {
-            return res.status(400).send({ status: false, msg: "collegeId is not valid" })
-        }
-
-
-        if (!isValidObjectId(collegeId)) {
-
-            res.status(400).send({ status: false, msg: "Please provide valid CollegeId" })
-        }
-
 
         let intern = await internModel.create(data)
         return res.status(200).send({ status: false, msg: intern })
@@ -75,24 +66,35 @@ const createIntern = async function (req, res) {
     }
 }
 
+// ______________________GET ______________________
 
-
-const getCollegeDetails = async function (req, res) {
-
+let getCollegeDetails = async function (req, res) {
     try {
-        let data = req.query.collegeName
+        let collegeName = req.query.collegeName
+        console.log(collegeName)
 
-        if (!data) {
-            return res.status(400).send({ status: false, msg: "college Name is not found......" })
+        let getCollegeName = await collegeModel.findOne({ name: collegeName, isDeleted: false })
+        if (!getCollegeName) { res.status(404).send({ status: false, msg: "CollegeName does not exist" }) }
+
+        let data = { name: getCollegeName.name, fullName: getCollegeName.fullName, logoLink: getCollegeName.logoLink }
+
+        let intern = await internModel.find({ collegeId: getCollegeName._id, isDeleted: false }).select('_id name email mobile')
+
+        if (!intern) { res.status(404).send({ status: false, msg: "No Intern Available in this College" }) }
+        else {
+            data.intern = intern
+            return res.status(200).send({ status: true, data: data })
         }
+    }
 
-        let college = await internModel.findOne({ name: collegeName })
-        res.status(200).send({ status: true, msg: college })
+    catch (error) {
+        res.status(500).send({ status: false, msg: error.message })
     }
-    catch (err) {
-        return res.status(500).send({ status: false, error: err.message })
-    }
+
 }
+
+
+
 
 
 

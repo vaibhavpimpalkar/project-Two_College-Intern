@@ -1,6 +1,6 @@
 
 const collegeModel=require("../models/collegeModel")
-//const internModel=require("../models/collegeModel")
+const internModel=require("../models/collegeModel")
 
 
 
@@ -44,7 +44,6 @@ const createCollege= async function (req,res){
  catch (error) {
     res.status(500).send({ status: false, message: error.message })
 }
-
-
 }
-module.exports={createCollege}
+
+module.exports.createCollege=createCollege
