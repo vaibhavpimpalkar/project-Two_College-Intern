@@ -85,17 +85,19 @@ let getCollegeDetails = async function (req, res) {
     try {
         let collegeName = req.query.collegeName
 
-        console.log(collegeName)
-
+        if (!collegeName) {
+            return res.status(400).send({ status: false, msg: "Please Enter collegeName" })
+        }
+      
         let getCollegeName = await collegeModel.findOne({ name: collegeName, isDeleted: false })
 
-        if (!getCollegeName) { res.status(404).send({ status: false, msg: "CollegeName does not exist" }) }
+        if (!getCollegeName) { return res.status(404).send({ status: false, msg: "CollegeName does not exist" }) }
 
         let data = { name: getCollegeName.name, fullName: getCollegeName.fullName, logoLink: getCollegeName.logoLink }
 
         let intern = await internModel.find({ collegeId: getCollegeName._id, isDeleted: false }).select('_id name email mobile')
 
-        if (!intern) { res.status(404).send({ status: false, msg: "No Intern Available in this College" }) }
+        if (!intern) {return  res.status(404).send({ status: false, msg: "No Intern Available in this College" }) }
         else {
             data.intern = intern
             return res.status(200).send({ status: true, data: data })
